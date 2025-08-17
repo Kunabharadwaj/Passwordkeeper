@@ -4,16 +4,17 @@ import { authOptions } from '@/lib/auth'
 import clientPromise from '@/lib/mongodb'
 import { encrypt, decrypt } from '@/lib/encryption'
 import { CreatePasswordData, Password } from '@/types/password'
+import { AuthenticatedSession } from '@/types/next-auth'
 
 export async function GET() {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session || !session.user || !(session.user as any).id) {
+    if (!session || !session.user || !session.user.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const userId = (session.user as any).id
+    const userId = (session as AuthenticatedSession).user.id
     const client = await clientPromise
     const db = client.db('passwordkeeper')
     const passwords = await db
@@ -39,11 +40,11 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session || !session.user || !(session.user as any).id) {
+    if (!session || !session.user || !session.user.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const userId = (session.user as any).id
+    const userId = (session as AuthenticatedSession).user.id
     const body: CreatePasswordData = await request.json()
     const { appName, username, password } = body
 

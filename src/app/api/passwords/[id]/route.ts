@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import clientPromise from '@/lib/mongodb'
 import { encrypt } from '@/lib/encryption'
 import { UpdatePasswordData } from '@/types/password'
+import { AuthenticatedSession } from '@/types/next-auth'
 import { ObjectId } from 'mongodb'
 
 export async function PUT(
@@ -13,11 +14,11 @@ export async function PUT(
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session || !session.user || !(session.user as any).id) {
+    if (!session || !session.user || !session.user.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const userId = (session.user as any).id
+    const userId = (session as AuthenticatedSession).user.id
     const resolvedParams = await params
     const body: UpdatePasswordData = await request.json()
     const { appName, username, password } = body
@@ -63,11 +64,11 @@ export async function DELETE(
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session || !session.user || !(session.user as any).id) {
+    if (!session || !session.user || !session.user.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const userId = (session.user as any).id
+    const userId = (session as AuthenticatedSession).user.id
     const resolvedParams = await params
     const client = await clientPromise
     const db = client.db('passwordkeeper')
