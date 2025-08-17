@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import clientPromise from '@/lib/mongodb'
-import { encrypt, decrypt } from '@/lib/encryption'
+import { encrypt } from '@/lib/encryption'
 import { UpdatePasswordData } from '@/types/password'
 import { ObjectId } from 'mongodb'
 
@@ -27,7 +27,7 @@ export async function PUT(
     const client = await clientPromise
     const db = client.db('passwordkeeper')
     
-    const updateData: any = {
+    const updateData: Record<string, unknown> = {
       updatedAt: new Date(),
     }
 
