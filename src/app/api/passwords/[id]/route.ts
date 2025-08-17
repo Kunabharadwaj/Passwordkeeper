@@ -13,10 +13,11 @@ export async function PUT(
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session?.user?.id) {
+    if (!session || !session.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const userId = (session.user as any).id
     const resolvedParams = await params
     const body: UpdatePasswordData = await request.json()
     const { appName, username, password } = body
@@ -39,7 +40,7 @@ export async function PUT(
     const result = await db.collection('passwords').updateOne(
       { 
         _id: new ObjectId(resolvedParams.id),
-        userId: session.user.id 
+        userId: userId 
       },
       { $set: updateData }
     )
@@ -62,17 +63,18 @@ export async function DELETE(
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session?.user?.id) {
+    if (!session || !session.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const userId = (session.user as any).id
     const resolvedParams = await params
     const client = await clientPromise
     const db = client.db('passwordkeeper')
     
     const result = await db.collection('passwords').deleteOne({
       _id: new ObjectId(resolvedParams.id),
-      userId: session.user.id
+      userId: userId
     })
 
     if (result.deletedCount === 0) {

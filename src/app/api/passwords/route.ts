@@ -9,15 +9,16 @@ export async function GET() {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session?.user?.id) {
+    if (!session || !session.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const userId = (session.user as any).id
     const client = await clientPromise
     const db = client.db('passwordkeeper')
     const passwords = await db
       .collection('passwords')
-      .find({ userId: session.user.id })
+      .find({ userId: userId })
       .toArray()
 
     // Decrypt passwords before sending to client
@@ -38,10 +39,11 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session?.user?.id) {
+    if (!session || !session.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const userId = (session.user as any).id
     const body: CreatePasswordData = await request.json()
     const { appName, username, password } = body
 
@@ -53,7 +55,7 @@ export async function POST(request: NextRequest) {
     const db = client.db('passwordkeeper')
     
     const newPassword: Omit<Password, '_id'> = {
-      userId: session.user.id,
+      userId: userId,
       appName,
       username,
       password: encrypt(password), // Encrypt password before storing
